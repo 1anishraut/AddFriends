@@ -2,34 +2,55 @@ const express = require("express");
 require("./config/database");
 const connectDB = require("./config/database");
 const app = express();
-const User = require("./models/user")
+const User = require("./models/user");
 
-
-app.use(express.json())
+app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-
-  const userData = (req.body)
-  
-
+  const userData = req.body;
   // Creating new intance of the User model
-  const user = new User( userData
+  const user = new User(
+    userData
     // {
     // firstName: 'Rohit',
     // lastName: 'Kumar',
     // emailId: 'anish@gmail.com',
     // password: 'Raut@2000'
     // }
-  )
-  
+  );
   try {
     await user.save();
     res.send("User Added Succefully");
   } catch (error) {
-    res.status(400).send("Errer sending user Data" + error.message)
+    res.status(400).send("Errer sending user Data" + error.message);
   }
-  
-})
+});
+
+// Find a user by emailId for ONE USER
+app.get("/user", async (req, res) => {
+  const userEmailId = req.body.emailId;
+
+  try {
+    const USER = await User.find({ emailId: userEmailId });
+    if (USER.length === 0) {
+      res.status(400).send("user email not found");
+    } else {
+      res.send(USER);
+    }
+  } catch (err) {
+    res.status(400).send("user email not found");
+  }
+});
+
+// Find all users for FEED API
+app.get("/feed", async (req, res) => {
+  try {
+    const USER = await User.find({});
+    res.send(USER);
+  } catch (err) {
+    res.status(400).send("user email not found");
+  }
+});
 
 connectDB()
   .then(() => {

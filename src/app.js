@@ -4,13 +4,23 @@ const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user")
 
+
+app.use(express.json())
+
 app.post("/signup", async (req, res) => {
-  const user = new User( {
-    firstName: 'Rohit',
-    lastName: 'Kumar',
-    emailId: 'anish@gmail.com',
-    password: 'Raut@2000'
-  })
+
+  const userData = (req.body)
+  
+
+  // Creating new intance of the User model
+  const user = new User( userData
+    // {
+    // firstName: 'Rohit',
+    // lastName: 'Kumar',
+    // emailId: 'anish@gmail.com',
+    // password: 'Raut@2000'
+    // }
+  )
   
   try {
     await user.save();
@@ -26,7 +36,7 @@ connectDB()
     console.log("Connection Sucessful");
 
     app.listen(3000, () => {
-      console.log("Server is running on port 3000");
+      console.log("Server is running on port 3000 -----------------");
     });
   })
   .catch((err) => {

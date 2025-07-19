@@ -1,6 +1,17 @@
 const express = require('express');
 const app = express();
 
+// Handeling multiple routes
+app.use("/next", (req, res, next) => {
+  console.log("FIRST REQUEST");
+  next()
+},
+  
+  (req, res) => {
+    console.log("SECOND RESPONSE")
+      res.send("SECOND RESPONSE");
+  }
+)
 
 // This will only match GET requests for the path "/test"
 app.get("/user", (req, res) => {

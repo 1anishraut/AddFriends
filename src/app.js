@@ -3,26 +3,53 @@ require("./config/database");
 const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
+const { validateSignupData } = require("./utils/Validation");
+const bcrpt = require("bcrypt");
 
 app.use(express.json());
 
+// Signup API
 app.post("/signup", async (req, res) => {
-  const userData = req.body;
-  // Creating new intance of the User model
-  const user = new User(
-    userData
-    // {
-    // firstName: 'Rohit',
-    // lastName: 'Kumar',
-    // emailId: 'anish@gmail.com',
-    // password: 'Raut@2000'
-    // }
-  );
   try {
+    // Validation of the data
+    validateSignupData(req);
+
+    // Encrypy the Password
+    const { firstName, lastName, emailId, password } = req.body;
+    const passwordHash = await bcrpt.hash(password, 10);
+    // console.log(passwordHash);
+
+    // Creating new intance of the User model
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+    });
+
     await user.save();
     res.send("User Added Succefully");
   } catch (error) {
-    res.status(400).send("Errer sending user Data" + error.message);
+    res.status(400).send("ERROR:" + error.message);
+  }
+});
+
+// Login API
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body
+    const user = await User.findOne({ emailId: emailId })
+    if (!user) {
+      throw new Error("Invalid Credentials")
+    }
+    const isPasswordValid = await bcrpt.compare(password, user.password)
+    if (isPasswordValid) {
+      res.send("Login Sucessfuly")
+    } else {
+      throw new Error("Invalid Credentials");
+    }
+  } catch (error) {
+    res.status(400).send("ERROR:" + error.message);
   }
 });
 
@@ -54,29 +81,41 @@ app.get("/feed", async (req, res) => {
 
 // Delete user by id
 app.delete("/user", async (req, res) => {
-  const userId = req.body.userId
+  const userId = req.body.userId;
   try {
     const userDelete = await User.findByIdAndDelete(userId);
     res.send("User Deleted Secessfully");
   } catch (err) {
     res.status(400).send("Unable to delete User ");
   }
-
-})
+});
 
 // Upadte user Patch
-app.patch("/user", async (req, res) => {
-  const userId = req.body.userId
-  const userData = req.body
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
+  const userData = req.body;
+
   try {
-    await User.findByIdAndUpdate({_id: userId}, userData)
-    res.send("User Updated sucessfully")
+    const ALLOWED_UPDATE = ["photoUrl", "about", "gender", "age", "skills"];
+    const isUpdateAllowed = Object.keys(userData).every((k) =>
+      ALLOWED_UPDATE.includes(k)
+    );
+    // console.log(isUpdateAllowed);
+    if (!isUpdateAllowed) {
+      throw new Error("Update not allowed");
+    }
+    if (userData.skills.length > 10) {
+      throw new Error("Skills cannot be more then 10");
+    }
+
+    await User.findByIdAndUpdate({ _id: userId }, userData, {
+      runValidators: true,
+    });
+    res.send("User Updated sucessfully");
   } catch (error) {
-    res.status(400).send("Error in updating data")
+    res.status(400).send("Error in updating data" + error.message);
   }
-})
-
-
+});
 
 connectDB()
   .then(() => {

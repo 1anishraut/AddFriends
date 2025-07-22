@@ -12,4 +12,19 @@ const validateSignupData = (req) => {
   }
 };
 
-module.exports= {validateSignupData,}
+const validatePasswordOnly = (password) => {
+  if (!validator.isStrongPassword(password)) {
+    throw new Error(
+      "Enter Strong Password (Min 8 chars, uppercase, lowercase, number, symbol)"
+    );
+  }
+};
+
+const validateEditProfileData = (req) => {
+  const allowedEditFields = ["firstName", "lastName", "emailId", "photoUrl", "gender", "age", "about", "skills"]
+  const isEditAllowed = Object.keys(req.body).every((field) => allowedEditFields.includes(field))
+  return isEditAllowed
+
+}
+
+module.exports= {validateSignupData, validateEditProfileData ,validatePasswordOnly}

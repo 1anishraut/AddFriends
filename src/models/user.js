@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
     firstName: {
       type: String,
       required: true,
+      index: true,
       maxLength: 20,
     },
     lastName: {
@@ -42,12 +43,16 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      validate(value) {
-        if (!["male", "female", "other"].includes(value)) {
-          // Validate fun will only run when new user data is added || add runValidator
-          throw new Error("Gender data is not valid");
-        }
+      enum: {
+        values: ["male", "female", "other"],
+        message: `{VALUE} is not valid gender type`,
       },
+      // validate(value) {
+      //   if (!["male", "female", "other"].includes(value)) {
+      //     // Validate fun will only run when new user data is added || add runValidator
+      //     throw new Error("Gender data is not valid");
+      //   }
+      // },
     },
     photoUrl: {
       type: String,
@@ -70,6 +75,8 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// Created Compound index for fast query in big database on DB
+userSchema.index({ firstName: 1, lastName: 1})
 
 
 userSchema.methods.getJWT = async function () {

@@ -11,6 +11,9 @@ ProfileRouter
 - GET /profile/password
 
 ConnectionRequestRouter
+- POST /request/send/:ststus/:userId
+- POST /request/review/:status/:requestId
+
 - POST /request/send/interested/:userId
 - POST /request/send/ignored/:userId
 
@@ -18,8 +21,8 @@ ConnectionRequestRouter
 - POST /request/review/rejected/:requestId
 
 UserRouter
-- GET /user/connections
 - GET /user/requests/received
+- GET /user/connections
 - GET /user/feed
 
 

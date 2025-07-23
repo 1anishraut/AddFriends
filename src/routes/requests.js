@@ -5,6 +5,8 @@ const { userAuth } = require("../middleware/auth");
 const ConnectionRequest = require("../models/connectionRequests")
 const User = require("../models/user")
 
+
+// Send Connection Request API
 requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res) => {
   try {
     const fromUserId = req.user._id  // getting loggedIn user id from userAuth middleware
@@ -59,6 +61,52 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res)
   } catch (error) {
     res.status(400).send("ERROR:" + error.message);
   }
+});
+
+
+
+
+// Review Requests API
+requestRouter.post("/request/review/:status/:requestId", userAuth, async (req, res) => {
+  try {
+    const loggedInUser = req.user
+
+    const {status, requestId} = req.params
+
+    const allowedStatus = ["accepted", "rejected"];
+    if (!allowedStatus) {
+      return res.status(400).json({message:"Invalid Status" + status })
+    }
+    
+    // Validate the status
+    // Validate request ID
+    // loggedInUser === toUserId 
+    // status === interest 
+    const connectionRequest = await ConnectionRequest.findOne({
+      _id: requestId,
+      toUserId: loggedInUser._id,
+      status: "interested"
+    })
+    if (!connectionRequest) {
+      return res.status(400).json({ message: "Connection Request not Found"});
+      
+    }
+
+    connectionRequest.status = status
+    const data = await connectionRequest.save()
+
+    res.json({
+      message: "Connection request: " + status,
+      data
+    })
+
+
+  } catch (error) {
+    res.status(400).send("ERROR:" + error.message);
+    
+  }
+
+
 });
 
 module.exports = requestRouter

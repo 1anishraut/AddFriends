@@ -1,11 +1,10 @@
-const express = require("express")
-const authRouter = express.Router()
+const express = require("express");
+const authRouter = express.Router();
 
 const { validateSignupData } = require("../utils/Validation");
 const User = require("../models/user");
 const bcrpt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
 
 // Signup API
 authRouter.post("/signup", async (req, res) => {
@@ -26,10 +25,20 @@ authRouter.post("/signup", async (req, res) => {
       password: passwordHash,
     });
 
-    await user.save();
-    res.send("User Added Succefully");
+    const savedUser = await user.save();
+
+    // Create JWT Token for auto login after signup
+    const token = await user.getJWT();
+
+    // Add token to cookie and send back to user
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 8 * 3600000),
+    });
+
+
+    res.json({ message: "User Added Succefully", data: savedUser });
   } catch (error) {
-    res.status(400).send("ERROR:" + error.message);
+    res.status(400).send("ERROR in signup: Enter valid details" );
   }
 });
 
@@ -44,16 +53,18 @@ authRouter.post("/login", async (req, res) => {
     const isPasswordValid = await user.validatePassword(password);
     if (isPasswordValid) {
       // Create JWT Token
-      const token = await user.getJWT()
+      const token = await user.getJWT();
 
       // Add token to cookie and send back to user
-      res.cookie("token", token);
-      res.send("Login Sucessfuly");
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8 * 3600000),
+      });
+      res.send(user);
     } else {
       throw new Error("Invalid Credentials");
     }
   } catch (error) {
-    res.status(400).send("ERROR in login:" + error.message);
+    res.status(400).send(error.message);
   }
 });
 
@@ -67,4 +78,4 @@ authRouter.post("/logout", async (req, res) => {
   }
 });
 
-module.exports = authRouter
+module.exports = authRouter;

@@ -6,7 +6,7 @@ const User = require("../models/user");
 
 
 const USER_SAFE_DATA =
-  "firstName lastName photoUrl age gender about skills profession about company";
+  "firstName lastName emailId photoUrl age gender about skills profession github linkedin whatsapp about company";
 
 
 
@@ -55,6 +55,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
       .populate("fromUserId", [
         "firstName",
         "lastName",
+        "emailId",
         "photoUrl",
         "age",
         "gender",
@@ -62,10 +63,14 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         "profession",
         "company",
         "about",
+        "github",
+        "linkedin",
+        "whatsapp",
       ])
       .populate("toUserId", [
         "firstName",
         "lastName",
+        "emailId",
         "photoUrl",
         "age",
         "gender",
@@ -73,6 +78,9 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         "profession",
         "company",
         "about",
+        "github",
+        "linkedin",
+        "whatsapp",
       ]);
 
     const data = connectionRequests.map((row) => {

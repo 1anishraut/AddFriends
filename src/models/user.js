@@ -71,11 +71,26 @@ const userSchema = new mongoose.Schema(
     },
     skills: {
       type: [String],
+      validate: {
+        validator: function (value) {
+          return value.length <= 4; // max 4 skills
+        },
+        message: "You can add up to 4 skills only.",
+      },
     },
     profession: {
       type: String,
     },
     company: {
+      type: String,
+    },
+    github: {
+      type: String,
+    },
+    linkedin: {
+      type: String,
+    },
+    whatsapp: {
       type: String,
     },
   },
